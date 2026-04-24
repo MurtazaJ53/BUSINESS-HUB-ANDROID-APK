@@ -108,21 +108,26 @@ class DatabaseSingleton {
   // ── Native boot ────────────────────────────────────────────
 
   private async bootNative(): Promise<void> {
-    const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite');
-    this.nativeSqlite = new SQLiteConnection(CapacitorSQLite);
+    try {
+      const { CapacitorSQLite, SQLiteConnection } = await import('@capacitor-community/sqlite');
+      this.nativeSqlite = new SQLiteConnection(CapacitorSQLite);
 
-    const DB_NAME = 'business_hub';
-    const retCC = await this.nativeSqlite.checkConnectionsConsistency();
-    const isConn = (await this.nativeSqlite.isConnection(DB_NAME, false)).result;
+      const DB_NAME = 'business_hub';
+      const retCC = await this.nativeSqlite.checkConnectionsConsistency();
+      const isConn = (await this.nativeSqlite.isConnection(DB_NAME, false)).result;
 
-    if (retCC.result && isConn) {
-      this.nativeDb = await this.nativeSqlite.retrieveConnection(DB_NAME, false);
-    } else {
-      this.nativeDb = await this.nativeSqlite.createConnection(
-        DB_NAME, false, 'no-encryption', 1, false,
-      );
+      if (retCC.result && isConn) {
+        this.nativeDb = await this.nativeSqlite.retrieveConnection(DB_NAME, false);
+      } else {
+        this.nativeDb = await this.nativeSqlite.createConnection(
+          DB_NAME, false, 'no-encryption', 1, false,
+        );
+      }
+      await this.nativeDb.open();
+    } catch (err) {
+      console.error('[DB] Native boot crash averted:', err);
+      throw new Error(`SQLite Native Boot Failed: ${err}`);
     }
-    await this.nativeDb.open();
   }
 
   // ── Web boot (sql.js + IndexedDB persistence) ─────────────

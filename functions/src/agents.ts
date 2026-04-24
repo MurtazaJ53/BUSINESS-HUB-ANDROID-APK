@@ -29,7 +29,9 @@ async function checkPermission(shopId: string, uid: string, module: string, acti
 /**
  * Agent Tool API: Provides secure, permission-guarded access to business data.
  */
-export const agentTool = onCall(async (request) => {
+export const agentTool = onCall({
+  maxInstances: 2
+}, async (request) => {
   const { shopId, toolName, args } = request.data;
   const uid = request.auth?.uid;
 
@@ -115,7 +117,9 @@ export const agentTool = onCall(async (request) => {
 /**
  * Agent Runner: Orchestrates LLM interaction and tool usage.
  */
-export const runAgent = onCall(async (request) => {
+export const runAgent = onCall({
+  maxInstances: 2
+}, async (request) => {
   const { shopId, agentName } = request.data;
   const uid = request.auth?.uid;
 
